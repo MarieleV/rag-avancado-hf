@@ -1,0 +1,7 @@
+sentence-transformers>=4.0
+faiss-cpu
+rank_bm25
+datasets
+huggingface_hub>=0.30
+pandas
+numpy

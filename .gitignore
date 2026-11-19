@@ -5,5 +5,6 @@ __pycache__/
 venv/
 .env
 *.faiss
+indice_local/
 *.npy
 .DS_Store

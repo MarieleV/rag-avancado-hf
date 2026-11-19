@@ -47,6 +47,11 @@ Pergunta ─► [HyDE] ─► busca densa (top-50) ─┐
 | 4. Híbrido + Rerank | | | | |
 | 5. HyDE + Híbrido + Rerank | | | | |
 
+> **Sobre a latência:** a coluna mede só a **recuperação** (busca densa, BM25, RRF e reranking).
+> Na linha 5, o tempo de **geração do documento hipotético pelo LLM (HyDE) não está incluído** — ele é uma
+> chamada extra ao LLM por pergunta e costuma custar mais do que todas as outras etapas juntas
+> (o tempo total aparece na saída `%%time` da seção 9 do notebook).
+
 <!-- ![Resultados](results/resultados_rag.png) -->
 
 ## Estrutura

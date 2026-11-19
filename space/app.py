@@ -167,6 +167,8 @@ def answer(question, mode, k, use_hyde):
         })
     timing = " · ".join(f"{k}: {v*1000:.0f} ms" for k, v in t.items())
     meta = f"**Modo:** {mode} · **LLM:** `{model}`  \n⏱️ {timing}"
+    if use_hyde and mode == MODE_NAIVE:
+        meta += "\n\nℹ️ HyDE não foi aplicado: no modo RAG naive a busca usa só a pergunta original."
     if hypo:
         meta += f"\n\n<details><summary>Documento hipotético (HyDE)</summary>\n\n{hypo}\n</details>"
     return text, pd.DataFrame(rows), meta
@@ -193,12 +195,14 @@ with gr.Blocks(title="RAG Avançado — Hugging Face") as demo:
                     gr.Examples(EXAMPLES, inputs=q, label="Perguntas do benchmark")
             with gr.Column(scale=2):
                 mode = gr.Radio([MODE_NAIVE, MODE_HYBRID, MODE_RERANK], value=MODE_RERANK, label="Pipeline")
-                hyde = gr.Checkbox(label="Query transformation (HyDE)", value=False)
+                hyde = gr.Checkbox(label="Query transformation (HyDE)", value=False,
+                                   info="Disponível apenas nos modos híbridos (não se aplica ao RAG naive).")
                 k = gr.Slider(1, 10, value=5, step=1, label="Trechos no contexto (k)")
                 btn = gr.Button("Responder", variant="primary")
         out = gr.Markdown(label="Resposta")
         meta = gr.Markdown()
         table = gr.Dataframe(label="Fontes recuperadas", wrap=True)
+        mode.change(lambda m: gr.update(interactive=(m != MODE_NAIVE)), mode, hyde)
         btn.click(answer, [q, mode, k, hyde], [out, table, meta])
         q.submit(answer, [q, mode, k, hyde], [out, table, meta])
 

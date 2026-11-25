@@ -6,6 +6,8 @@ Variáveis de ambiente (Settings → Variables and secrets do Space):
                Se ausente, o índice é construído na inicialização (leva alguns minutos em CPU).
   LLM_MODELS   (opcional) lista de modelos separados por vírgula, tentados em ordem.
   GRADIO_SHARE (opcional) "1" cria um link público temporário (usado na demo do Colab).
+  LLM_LOCAL    (opcional) "1" roda o LLM na própria GPU, em 4 bits, em vez de chamar o Inference Providers
+               (usado na demo do Colab; dispensa HF_TOKEN e créditos). Modelo: LOCAL_LLM_MODEL.
 """
 import os
 import time
@@ -70,10 +72,41 @@ except Exception:
 
 client = InferenceClient(api_key=os.getenv("HF_TOKEN"))
 
+LOCAL_MODEL = os.getenv("LOCAL_LLM_MODEL", "Qwen/Qwen3-4B-Instruct-2507")
+local_tok = local_llm = None
+if os.getenv("LLM_LOCAL", "").lower() in ("1", "true"):
+    if DEVICE == "cuda":
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+        print(f"Carregando LLM local {LOCAL_MODEL} (4 bits)…")
+        local_tok = AutoTokenizer.from_pretrained(LOCAL_MODEL)
+        local_llm = AutoModelForCausalLM.from_pretrained(
+            LOCAL_MODEL, device_map="auto",
+            quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+                                                   bnb_4bit_compute_dtype=torch.float16))
+    else:
+        print("LLM_LOCAL ignorado: sem GPU. Usando Inference Providers.")
+
 
 # ------------------------------------------------------------------ LLM
+def local_chat(messages, max_tokens):
+    prompt = local_tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    inputs = local_tok(prompt, return_tensors="pt").to(local_llm.device)
+    with torch.no_grad():
+        out = local_llm.generate(**inputs, max_new_tokens=max_tokens, do_sample=False,
+                                 pad_token_id=local_tok.eos_token_id)
+    return local_tok.decode(out[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip()
+
+
 def llm_chat(messages, max_tokens=400):
-    """Tenta os modelos em ordem; devolve (texto, modelo usado) ou (None, erro)."""
+    """LLM local (se carregado) ou modelos do Inference Providers em ordem; devolve (texto, modelo) ou (None, erro)."""
+    if local_llm is not None:
+        try:
+            text = local_chat(messages, max_tokens)
+            if text:
+                return text, f"{LOCAL_MODEL} (local, 4 bits)"
+            return None, f"{LOCAL_MODEL}: resposta vazia"
+        except Exception as e:
+            return None, f"{LOCAL_MODEL} (local): {e}"
     last_err = "HF_TOKEN não configurado" if not os.getenv("HF_TOKEN") else ""
     for model in LLM_MODELS:
         try:
@@ -232,7 +265,7 @@ with gr.Blocks(title="RAG Avançado — Hugging Face") as demo:
             "4. **RRF**: funde as duas listas pela posição — `Σ 1/(60 + posição)`.\n"
             "5. **Reranking**: cross-encoder `bge-reranker-v2-m3` reordena os 30 melhores.\n"
             "6. **HyDE** (opcional): o LLM escreve uma resposta hipotética, usada só para a busca densa.\n"
-            "7. **Geração**: LLM open-source via Inference Providers responde citando `[n]`."
+            "7. **Geração**: LLM open-source (local em 4 bits ou via Inference Providers) responde citando `[n]`."
         )
 
 if __name__ == "__main__":

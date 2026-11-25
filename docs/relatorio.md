@@ -256,20 +256,18 @@ aparece na saída `%%time` da seção 9 do notebook.
 
 ## 6. Resultados
 
-**Corpus e índice.** 5.035 documentos foram divididos em 6.643 chunks (1,32 por documento); o índice FAISS tem 1.024 dimensões e 27,2 MB em disco. As 50 perguntas têm 57 pares relevantes (algumas têm mais de uma passagem correta). 
-
 | Configuração | Recall@5 | MRR@10 | nDCG@10 | ms/consulta¹ |
 |---|---|---|---|---|
-| 1. Denso (naive) | 0.640 | 0.548 | 0.574 | 2.9 |
-| 2. BM25 | 0.430 | 0.298 | 0.356 | 6.8 |
-| 3. Híbrido (RRF) | 0.610 | 0.444 | 0.502 | 9.7 |
-| 4. Híbrido + Rerank | 0.700 | 0.634 | 0.652 | 271.4 |
-| 5. HyDE + Híbrido + Rerank | 0.720 | 0.625 | 0.649 | 269.2 |
+| 1. Denso (naive) | 0.64 | 0.548 | 0.574 | 3.0 |
+| 2. BM25 | 0.43 | 0.298 | 0.357 | 7.9 |
+| 3. Híbrido (RRF) | 0.61 | 0.444 | 0.502 | 10.8 |
+| 4. Híbrido + Rerank | 0.70 | 0.634 | 0.653 | 235.2 |
+| 5. HyDE + Híbrido + Rerank | 0.72 | 0.625 | 0.649 | 260.4 |
 
 ¹ Somente recuperação. Na linha 5, **sem** o tempo de geração do HyDE pelo LLM (ver seção 5).
 A busca densa roda em lote para as 50 perguntas, então a latência por consulta das linhas 1, 3, 4 e 5 está um pouco subestimada em relação a um uso consulta a consulta.
 
-<!-- ![Resultados](../results/resultados_rag.png) -->
+![Resultados](../results/resultados_rag.png)
 
 **Leitura da tabela:** O Recall@k completo (k = 1, 3, 5, 10) está em ´results/resultados_rag.json´. Para o Recall@1, os valores foram 0,39 (denso), 0,18 (BM25), 0,30 (híbrido), 0,49 (híbrido + rerank) e 0,48 (HyDE); para o Recall@10, 0,73, 0,55, 0,69, 0,78 e 0,78.
 
@@ -285,18 +283,31 @@ Na comparação lado a lado com apenas 3 trechos no contexto, a passagem correta
 
 **Teste de robustez:** para "Qual foi o placar da final da Copa do Mundo de 2026?" (fora da base), o contexto trouxe passagens sobre outras Copas e o modelo respondeu corretamente "Não encontrei essa informação nos documentos."
 
-**GraphRAG (demonstração)** (seção 12): A partir de 12 trechos recuperados para "história e geografia do Brasil", o LLM extraiu um grafo com **71 entidades e 54 relações**. As quatro maiores comunidades (Louvain) tinham 10, 8, 7 e 6 entidades. Apenas a primeira tratava do Brasil (identidade nacional e futebol); as demais giraram em torno de América Central e Mesoamérica, de um grupo sem tema claro e de globalização. A resposta à pergunta global ("quais os principais temas dos documentos sobre o Brasil?") acabou usando só a primeira comunidade. O resultado ilustra o mecanismo, mas com limites claros: o corpus é um conjunto de passagens da Wikipédia sem tema comum, e o grafo é esparso (54 relações para 71 entidades), o que gera comunidades pequenas e pouco coerentes.
-<!-- ![GraphRAG](../results/graphrag_demo.png) -->
+**GraphRAG** (seção 12): número de entidades, relações e comunidades obtidas e a resposta à pergunta global.
+![GraphRAG](../results/graphrag_demo.png)
 
 ---
 
 ## 7. Discussão
 
-
-- **Híbrido × denso:** A fusão **não melhorou** a recuperação: Recall@5 foi de 0,64 para 0,61, MRR@10 de 0,548 para 0,444 e nDCG@10 de 0,574 para 0,502. O BM25 sozinho ficou bem abaixo do denso (Recall@5 = 0,43; nDCG@10 = 0,356) e, como o RRF dá o mesmo peso às duas listas, ele rebaixou acertos do denso (Recall@1 caiu de 0,39 para 0,30). Uma explicação plausível, que não testamos, é que as perguntas do Natural Questions são paráfrases em linguagem natural e o corpus é uma tradução automática: o vocabulário da pergunta e o da passagem divergem (por exemplo, "O Estranho Mundo de Jack" na pergunta contra "O Pesadelo Antes do Natal" na passagem correta), o que enfraquece a busca por termos exatos. Não analisamos pergunta a pergunta onde o BM25 ajudou, e não testamos pesos diferentes no RRF.
-- **Ganho do reranking:** É o maior ganho do trabalho. Do híbrido para o híbrido + rerank: Recall@5 de 0,61 para 0,70, MRR@10 de 0,444 para 0,634, nDCG@10 de 0,502 para 0,652 e Recall@1 de 0,30 para 0,49. Em relação ao naive: +0,06 no Recall@5, +0,086 no MRR@10 e +0,078 no nDCG@10. O reranking atua sobretudo na **ordem** (passagem certa mais perto do topo), o que importa para um contexto de 5 trechos. Ele só reordena os 30 candidatos do híbrido, então tem um teto: o Recall@10 parou em 0,78. Como não testamos "denso + rerank" (sem BM25), não dá para separar quanto do ganho vem do reranker e quanto do conjunto de candidatos.
-- **HyDE:** Sem ganho mensurável: Recall@5 foi de 0,70 para 0,72 (≈ uma pergunta a mais em 50), enquanto Recall@1 (0,49 → 0,48), MRR@10 (0,634 → 0,625) e nDCG@10 (0,652 → 0,649) ficaram praticamente iguais e o Recall@10 não mudou. Todas as diferenças são ≤ 0,02, abaixo da margem de ruído (~0,03). Isso é coerente com a hipótese de que o HyDE depende do conhecimento do LLM: no primeiro exemplo, o modelo de 4B afirmou que "O Estranho Mundo de Jack" não é um filme da Disney e inventou uma explicação, o tipo de fato errado que pode afastar a busca da resposta. Resultado neutro é um achado válido.
-- **Custo × benefício:** O reranking acrescentou ≈ 262 ms por consulta (271,4 − 9,7 ms) na T4, para 30 pares. O HyDE exige uma chamada ao LLM por pergunta: gerar os 50 documentos hipotéticos levou 7 min 48 s (≈ 9,4 s por pergunta, mais de 30 vezes o tempo de toda a recuperação), sem benefício claro. Neste experimento, a melhor relação custo-benefício foi a configuração 4 (híbrido + rerank).
+- **Híbrido × denso: a fusão piorou.** O Híbrido (RRF) ficou abaixo do denso sozinho em todas as métricas
+  (Recall@5 0,61 contra 0,64; MRR@10 0,444 contra 0,548). O motivo é a diferença de qualidade entre as duas
+  listas: o BM25 é bem mais fraco neste corpus (Recall@5 de 0,43), e o RRF dá o mesmo peso às duas, sem olhar o
+  score. Os trechos ruins do topo do BM25 acabam empurrando para baixo acertos que o denso já tinha bem
+  posicionados. Busca híbrida não é ganho garantido: ela ajuda quando as duas buscas têm qualidade parecida e erram
+  em perguntas diferentes, o que não aconteceu aqui.
+- **O ganho real veio do reranker.** Sobre o híbrido, o cross-encoder elevou o Recall@5 de 0,61 para 0,70, o
+  MRR@10 de 0,444 para 0,634 e o nDCG@10 de 0,502 para 0,653. Mesmo comparado ao denso, foi a única etapa que
+  melhorou com folga (Recall@1 de 0,39 para 0,49). O reranker atua sobretudo na **ordem** (passagem certa mais
+  perto do topo), que é o que importa para um contexto de 5 trechos. Ele também recupera parte do que a fusão
+  perdeu: os 30 candidatos do RRF contêm a passagem certa, mesmo quando ela está mal ordenada.
+- **HyDE quase não mudou nada.** Em relação à linha 4, o Recall@5 subiu só 0,02 (0,70 para 0,72), e o MRR@10
+  (0,634 para 0,625) e o nDCG@10 (0,653 para 0,649) caíram um pouco; o Recall@10 ficou igual (0,78). Essas
+  diferenças estão dentro do ruído esperado para 50 perguntas. Com um LLM de 4B, o documento hipotético nem
+  sempre acerta os fatos, e o reranker, que reordena com a pergunta original, neutraliza boa parte do efeito.
+- **Custo × benefício:** o reranking leva a latência de recuperação de ~11 ms para ~235 ms por consulta (≈ 22×),
+  preço que se justifica pelo ganho. O HyDE acrescenta uma chamada inteira ao LLM (não contabilizada na tabela)
+  sem ganho mensurável, então não se paga nesta configuração.
 
 **Limitações:** 50 perguntas é uma amostra pequena (diferenças menores que ~0,03 podem ser ruído; 0,02 de Recall@5 equivale a uma pergunta); o corpus é uma tradução automática; a avaliação quantitativa cobre a recuperação, não a qualidade da resposta gerada (os exemplos qualitativos mostram que o LLM pode responder mesmo quando o contexto não tem a resposta); a busca densa foi medida em lote; o GraphRAG é uma demonstração com 12 trechos, não uma avaliação; e não rodamos a ablação "denso + rerank" nem variações de peso no RRF.
 

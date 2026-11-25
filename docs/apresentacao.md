@@ -121,14 +121,13 @@ Pergunta ─► [HyDE] ─► FAISS top-50 ─┐
 
 ## Resultados
 
-
 | Configuração | Recall@5 | MRR@10 | nDCG@10 | ms/consulta* |
 |---|---|---|---|---|
-| 1. Denso (naive) | 0.640 | 0.548 | 0.574 | 2.9 |
-| 2. BM25 | 0.430 | 0.298 | 0.356 | 6.8 |
-| 3. Híbrido (RRF) | 0.610 | 0.444 | 0.502 | 9.7 |
-| 4. Híbrido + Rerank | 0.700 | 0.634 | 0.652 | 271.4 |
-| 5. HyDE + Híbrido + Rerank | 0.720 | 0.625 | 0.649 | 269.2 |
+| 1. Denso (naive) | 0.64 | 0.548 | 0.574 | 3.0 |
+| 2. BM25 | 0.43 | 0.298 | 0.357 | 7.9 |
+| 3. Híbrido (RRF) | 0.61 | 0.444 | 0.502 | 10.8 |
+| 4. Híbrido + Rerank | 0.70 | 0.634 | 0.653 | 235.2 |
+| 5. HyDE + Híbrido + Rerank | 0.72 | 0.625 | 0.649 | 260.4 |
 
 <p class="small">* somente recuperação; linha 5 sem o tempo de geração do HyDE.</p>
 

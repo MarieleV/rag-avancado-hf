@@ -2,7 +2,7 @@
 
 **Busca híbrida, reranking e HyDE: medindo quanto cada técnica melhora a recuperação em português.**
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SEU-USUARIO/rag-avancado-hf/blob/main/notebooks/RAG_Avancado_NanoNQ.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1LkVumJ6Iie85-qsgdWIetZetARjoUJKx/view?usp=sharing)
 [![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-demo-blue)](https://huggingface.co/spaces/SEU-USUARIO/rag-avancado-pt)
 
 Projeto de avaliação final da disciplina **Machine Learning — Deep Learning**
@@ -40,22 +40,13 @@ Pergunta ─► [HyDE] ─► busca densa (top-50) ─┐
 
 ## Resultados
 
-´hakari-bench/NanoBEIR-pt´, subconjunto NanoNQ: 5.035 passagens da Wikipédia em português, 50 perguntas e o gabarito das passagens relevantes.
-
 | Configuração | Recall@5 | MRR@10 | nDCG@10 | ms/consulta |
 |---|---|---|---|---|
-| 1. Denso (naive) | 0.640 | 0.548 | 0.574 | 2.9 |
-| 2. BM25 | 0.430 | 0.298 | 0.356 | 6.8 |
-| 3. Híbrido (RRF) | 0.610 | 0.444 | 0.502 | 9.7 |
-| 4. Híbrido + Rerank | 0.700 | 0.634 | 0.652 | 271.4 |
-| 5. HyDE + Híbrido + Rerank | 0.720 | 0.625 | 0.649 | 269.2 |
-
-Corpus: 5.035 documentos → 6.643 chunks · 57 pares relevantes para as 50 perguntas · execução no Colab (T4).
-
-**Principais achados**
-- **Busca híbrida não superou o denso** neste benchmark (Recall@5 0,61 vs 0,64; nDCG@10 0,50 vs 0,57). O BM25 sozinho é fraco (nDCG@10 = 0,36) e, com RRF de pesos iguais, rebaixa acertos do denso.
-- **O reranking é o maior ganho:** sobre o híbrido, MRR@10 sobe de 0,44 para 0,63 e nDCG@10 de 0,50 para 0,65, ao custo de ≈ 262 ms por consulta. Resgatou 5 das 15 perguntas em que o naive errou o top-5.
-- **HyDE não trouxe ganho mensurável** (todas as diferenças ≤ 0,02, abaixo da margem de ruído de ~0,03 com 50 perguntas) e custou ≈ 9 s por pergunta de geração.
+| 1. Denso (naive) | 0.64 | 0.548 | 0.574 | 3.0 |
+| 2. BM25 | 0.43 | 0.298 | 0.357 | 7.9 |
+| 3. Híbrido (RRF) | 0.61 | 0.444 | 0.502 | 10.8 |
+| 4. Híbrido + Rerank | 0.70 | 0.634 | 0.653 | 235.2 |
+| 5. HyDE + Híbrido + Rerank | 0.72 | 0.625 | 0.649 | 260.4 |
 
 > **Sobre a latência:** a coluna mede só a **recuperação** (busca densa, BM25, RRF e reranking).
 > Na linha 5, o tempo de **geração do documento hipotético pelo LLM (HyDE) não está incluído** — ele é uma
@@ -63,6 +54,7 @@ Corpus: 5.035 documentos → 6.643 chunks · 57 pares relevantes para as 50 perg
 > (o tempo total aparece na saída `%%time` da seção 9 do notebook). No experimento, gerar os 50 documentos hipotéticos > levou 7 min 48 s (≈ 9,4 s por pergunta, contra ≈ 0,27 s de toda a recuperação).
 
 
+![Resultados](results/resultados_rag.png)
 
 ## Estrutura
 
@@ -105,8 +97,5 @@ pytest tests/
 - Chen et al. (2024). *BGE M3-Embedding*.
 - Edge et al. (2024). *From Local to Global: A Graph RAG Approach to Query-Focused Summarization*.
 
-## Alunos
-
-Mariele Vieira · Maria A. Giuliari · Alexandre Sebastian 
 
 Licença MIT.

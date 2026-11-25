@@ -1,16 +1,20 @@
-"""RAG Avançado (Busca Híbrida + Reranking + HyDE) — app Gradio para o Hugging Face Spaces.
+"""RAG Avançado (Busca Híbrida + Reranking + HyDE) — interface Gradio.
 
-Variáveis de ambiente (Settings → Variables and secrets do Space):
-  HF_TOKEN     (secret)  token com permissão "Inference Providers" — usado pelo LLM gerador
-  INDEX_REPO   (variável) dataset com chunks + embeddings publicado pelo notebook (ex.: usuario/rag-nanonq-pt-index).
-               Se ausente, o índice é construído na inicialização (leva alguns minutos em CPU).
-  LLM_MODELS   (opcional) lista de modelos separados por vírgula, tentados em ordem.
-  GRADIO_SHARE (opcional) "1" cria um link público temporário (usado na demo do Colab).
-  LLM_LOCAL    (opcional) "1" roda o LLM na própria GPU, em 4 bits, em vez de chamar o Inference Providers
-               (usado na demo do Colab; dispensa HF_TOKEN e créditos). Modelo: LOCAL_LLM_MODEL.
+Executada pelo notebook notebooks/Demo_Gradio_Colab.ipynb (GPU T4 do Colab, link público).
+Também funciona num Hugging Face Space com SDK Gradio (exige conta PRO).
+
+Variáveis de ambiente:
+  INDEX_REPO   dataset com chunks + embeddings publicado pelo notebook (seção 13),
+               ex.: mariele-vieira/rag-nanonq-pt-index. Se ausente, o índice é construído na inicialização.
+  LLM_LOCAL    "1" roda o LLM na própria GPU, em 4 bits (modelo: LOCAL_LLM_MODEL). Usado na demo do Colab.
+  HF_TOKEN     token com permissão "Inference Providers"; só é usado quando o LLM não roda localmente.
+  LLM_MODELS   modelos do Inference Providers, separados por vírgula, tentados em ordem.
+  GRADIO_SHARE "1" cria um link público temporário (.gradio.live).
 """
 import os
+import sys
 import time
+from pathlib import Path
 
 import faiss
 import gradio as gr
@@ -22,7 +26,9 @@ from huggingface_hub import InferenceClient
 from rank_bm25 import BM25Okapi
 from sentence_transformers import CrossEncoder, SentenceTransformer
 
-from rag_core import HYDE_PROMPT, build_messages, chunk_text, rrf_fuse, tokenize
+# As funções puras ficam em src/rag_core.py (mesmo código testado em tests/ e usado no notebook)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from rag_core import HYDE_PROMPT, build_messages, chunk_text, rrf_fuse, tokenize  # noqa: E402
 
 DATASET_ID = os.getenv("DATASET_ID", "hakari-bench/NanoBEIR-pt")
 SPLIT = os.getenv("SPLIT", "NanoNQ")

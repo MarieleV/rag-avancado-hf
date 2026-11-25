@@ -10,4 +10,5 @@ huggingface_hub>=0.30
 pandas
 matplotlib
 tabulate
+gradio
 pytest

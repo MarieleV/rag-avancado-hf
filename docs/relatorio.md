@@ -8,7 +8,7 @@
 
 **Alunos:** Mariele Vieira, Maria A. Giuliari e Alexandre Sebastian 
 
-**Código:** repositório `rag-avancado-hf` (notebook, app Gradio no Hugging Face Spaces e testes)
+**Código:** repositório `rag-avancado-hf` (notebook do experimento, demo Gradio no Colab e testes)
 
 ---
 
@@ -217,7 +217,7 @@ novo, mudar de fonte). Self-RAG, Corrective RAG e os agentes de 2025 são instâ
 | LLM gerador | `Qwen/Qwen3-4B-Instruct-2507` em 4 bits (NF4) | Aberto (Apache 2.0), bom em português, cabe numa T4 gratuita (2.2, 2.4) |
 | Prompt | Citações `[n]` + frase fixa de recusa | Rastreabilidade e redução de alucinação |
 | GraphRAG | Mini-demonstração | Ilustrar perguntas globais sem o custo de indexar o corpus todo (3.3) |
-| Interface | Gradio no Hugging Face Spaces + Inference Providers | Prototipagem pública com modelos do Hub |
+| Interface | Gradio no Colab (GPU T4, link público) com o LLM local em 4 bits; índice publicado como dataset no Hub | Prototipagem pública sem custo: Spaces com Gradio passaram a exigir conta PRO e os créditos gratuitos do *Inference Providers* são limitados |
 
 ---
 
@@ -269,7 +269,7 @@ A busca densa roda em lote para as 50 perguntas, então a latência por consulta
 
 ![Resultados](../results/resultados_rag.png)
 
-**Leitura da tabela:** O Recall@k completo (k = 1, 3, 5, 10) está em ´results/resultados_rag.json´. Para o Recall@1, os valores foram 0,39 (denso), 0,18 (BM25), 0,30 (híbrido), 0,49 (híbrido + rerank) e 0,48 (HyDE); para o Recall@10, 0,73, 0,55, 0,69, 0,78 e 0,78.
+**Leitura da tabela:** O Recall@k completo (k = 1, 3, 5, 10) está em `results/resultados_rag.json`. Para o Recall@1, os valores foram 0,39 (denso), 0,18 (BM25), 0,30 (híbrido), 0,49 (híbrido + rerank) e 0,48 (HyDE); para o Recall@10, 0,73, 0,55, 0,69, 0,78 e 0,78.
 
 **Exemplos qualitativos** (seção 11 do notebook): Em 15 das 50 perguntas o RAG naive não trouxe a passagem correta no top-5; o pipeline com reranking resgatou 5 delas (a posição é calculada no nível de documento):
 
@@ -283,7 +283,15 @@ Na comparação lado a lado com apenas 3 trechos no contexto, a passagem correta
 
 **Teste de robustez:** para "Qual foi o placar da final da Copa do Mundo de 2026?" (fora da base), o contexto trouxe passagens sobre outras Copas e o modelo respondeu corretamente "Não encontrei essa informação nos documentos."
 
-**GraphRAG** (seção 12): número de entidades, relações e comunidades obtidas e a resposta à pergunta global.
+**GraphRAG** (seção 12): a partir de 12 trechos recuperados para "história e geografia do Brasil", o LLM extraiu
+triplas (entidade, relação, entidade) e o Louvain agrupou as entidades em comunidades (cores na figura). Algumas
+comunidades fazem sentido temático, como a Copa do Mundo de 1994 (Romário, Bebeto, Dunga, final de 1994), a América
+Central (Nicarágua, Honduras, Guatemala, Belize, El Salvador, Mesoamérica), a história da geologia (Buffon, Werner)
+e o comércio de peles (Rio Columbia, Lewis e Clark). O grafo também mostra os limites da versão em miniatura:
+os trechos recuperados são heterogêneos, a mesma entidade aparece duplicada ("Silva" e "silva"), e o modelo de 4B
+cria entidades vagas como "ano desconhecido" e "autora desconhecida". Um GraphRAG completo exigiria resolução de
+entidades e um corpus mais coeso.
+
 ![GraphRAG](../results/graphrag_demo.png)
 
 ---

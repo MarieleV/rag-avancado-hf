@@ -1,6 +1,6 @@
 """Funções puras do pipeline RAG (sem dependência de modelos).
 
-Usadas tanto no notebook quanto no app do Hugging Face Spaces.
+Usadas no notebook do experimento, na interface Gradio (space/app.py) e testadas em tests/.
 """
 import math
 import re

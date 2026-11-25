@@ -91,14 +91,12 @@ Docker; na conta gratuita só há Spaces estáticos, que não rodam os modelos e
 Colab, com GPU T4 gratuita e um link público temporário do Gradio.
 
 1. Abra o badge **"Demo no Colab"** e escolha *Ambiente de execução → T4 GPU*.
-2. Em 🔑 *Secrets*, crie `HF_TOKEN` (token com permissão *Make calls to Inference Providers*) e ative o acesso
-   ao notebook.
-3. *Executar tudo* → abra o link `https://….gradio.live` que aparece na última célula.
+2. *Executar tudo* → abra o link `https://….gradio.live` que aparece na última célula.
 
 A demo não recalcula nada: ela baixa o índice já publicado no Hub
 ([`mariele-vieira/rag-nanonq-pt-index`](https://huggingface.co/datasets/mariele-vieira/rag-nanonq-pt-index),
-seção 13 do notebook) e usa um LLM aberto via *Inference Providers*. O link funciona enquanto a sessão do Colab
-estiver ativa.
+seção 13 do notebook) e roda o LLM gerador (`Qwen3-4B-Instruct-2507`, 4 bits) na própria GPU do Colab, sem
+precisar de token nem de créditos do *Inference Providers*. O link funciona enquanto a sessão do Colab estiver ativa.
 
 > **Num Space (conta PRO):** crie um Space com SDK Gradio, envie os arquivos de `space/` e defina em *Settings* o
 > secret `HF_TOKEN` e a variável `INDEX_REPO = mariele-vieira/rag-nanonq-pt-index`.

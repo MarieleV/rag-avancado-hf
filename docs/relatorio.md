@@ -251,41 +251,47 @@ aparece na saída `%%time` da seção 9 do notebook.
 
 ## 6. Resultados
 
-> ✏️ **Preencher após executar o notebook** — a seção 10 imprime esta tabela pronta (`results.to_markdown()`)
-> e salva o gráfico `results/resultados_rag.png`.
-
 | Configuração | Recall@5 | MRR@10 | nDCG@10 | ms/consulta¹ |
 |---|---|---|---|---|
-| 1. Denso (naive) | | | | |
-| 2. BM25 | | | | |
-| 3. Híbrido (RRF) | | | | |
-| 4. Híbrido + Rerank | | | | |
-| 5. HyDE + Híbrido + Rerank | | | | |
+| 1. Denso (naive) | 0.64 | 0.548 | 0.574 | 3.0 |
+| 2. BM25 | 0.43 | 0.298 | 0.357 | 7.9 |
+| 3. Híbrido (RRF) | 0.61 | 0.444 | 0.502 | 10.8 |
+| 4. Híbrido + Rerank | 0.70 | 0.634 | 0.653 | 235.2 |
+| 5. HyDE + Híbrido + Rerank | 0.72 | 0.625 | 0.649 | 260.4 |
 
 ¹ Somente recuperação. Na linha 5, **sem** o tempo de geração do HyDE pelo LLM (ver seção 5).
 
-<!-- ![Resultados](../results/resultados_rag.png) -->
+![Resultados](../results/resultados_rag.png)
 
 **Exemplos qualitativos** (seção 11 do notebook): copie 1–2 perguntas "resgatadas" — em que a passagem correta
 estava fora do top-5 no RAG naive e entrou no top-5 com reranking — e a resposta do teste de robustez (pergunta
 fora da base, em que o modelo deve recusar).
 
 **GraphRAG** (seção 12): número de entidades, relações e comunidades obtidas e a resposta à pergunta global.
-<!-- ![GraphRAG](../results/graphrag_demo.png) -->
+![GraphRAG](../results/graphrag_demo.png)
 
 ---
 
 ## 7. Discussão
 
-> ✏️ Ajustar o texto aos números obtidos. Os pontos abaixo indicam o que analisar.
-
-- **Híbrido × denso:** a fusão melhorou o Recall@5? Em quais perguntas o BM25 ajudou (nomes, datas, números)?
-- **Ganho do reranking:** compare MRR@10 e nDCG@10 entre as linhas 3 e 4 — o reranking atua sobretudo na
-  **ordem** (passagem certa mais perto do topo), que é o que importa para um contexto de 5 trechos.
-- **HyDE:** depende do conhecimento prévio do LLM. Com um modelo de 4B, o documento hipotético pode trazer fatos
-  errados que afastam a busca da resposta; o resultado pode ser neutro ou até negativo — e isso é um achado válido.
-- **Custo × benefício:** o reranking acrescenta dezenas a centenas de milissegundos por consulta; o HyDE acrescenta
-  uma chamada inteira ao LLM (não contabilizada na tabela).
+- **Híbrido × denso: a fusão piorou.** O Híbrido (RRF) ficou abaixo do denso sozinho em todas as métricas
+  (Recall@5 0,61 contra 0,64; MRR@10 0,444 contra 0,548). O motivo é a diferença de qualidade entre as duas
+  listas: o BM25 é bem mais fraco neste corpus (Recall@5 de 0,43), e o RRF dá o mesmo peso às duas, sem olhar o
+  score. Os trechos ruins do topo do BM25 acabam empurrando para baixo acertos que o denso já tinha bem
+  posicionados. Busca híbrida não é ganho garantido: ela ajuda quando as duas buscas têm qualidade parecida e erram
+  em perguntas diferentes, o que não aconteceu aqui.
+- **O ganho real veio do reranker.** Sobre o híbrido, o cross-encoder elevou o Recall@5 de 0,61 para 0,70, o
+  MRR@10 de 0,444 para 0,634 e o nDCG@10 de 0,502 para 0,653. Mesmo comparado ao denso, foi a única etapa que
+  melhorou com folga (Recall@1 de 0,39 para 0,49). O reranker atua sobretudo na **ordem** (passagem certa mais
+  perto do topo), que é o que importa para um contexto de 5 trechos. Ele também recupera parte do que a fusão
+  perdeu: os 30 candidatos do RRF contêm a passagem certa, mesmo quando ela está mal ordenada.
+- **HyDE quase não mudou nada.** Em relação à linha 4, o Recall@5 subiu só 0,02 (0,70 para 0,72), e o MRR@10
+  (0,634 para 0,625) e o nDCG@10 (0,653 para 0,649) caíram um pouco; o Recall@10 ficou igual (0,78). Essas
+  diferenças estão dentro do ruído esperado para 50 perguntas. Com um LLM de 4B, o documento hipotético nem
+  sempre acerta os fatos, e o reranker, que reordena com a pergunta original, neutraliza boa parte do efeito.
+- **Custo × benefício:** o reranking leva a latência de recuperação de ~11 ms para ~235 ms por consulta (≈ 22×),
+  preço que se justifica pelo ganho. O HyDE acrescenta uma chamada inteira ao LLM (não contabilizada na tabela)
+  sem ganho mensurável, então não se paga nesta configuração.
 
 **Limitações.** 50 perguntas é uma amostra pequena (diferenças menores que ~0,03 podem ser ruído); o corpus é uma
 tradução automática; a avaliação cobre a recuperação, não a qualidade da resposta gerada; o GraphRAG é uma

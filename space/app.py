@@ -5,6 +5,7 @@ Variáveis de ambiente (Settings → Variables and secrets do Space):
   INDEX_REPO   (variável) dataset com chunks + embeddings publicado pelo notebook (ex.: usuario/rag-nanonq-pt-index).
                Se ausente, o índice é construído na inicialização (leva alguns minutos em CPU).
   LLM_MODELS   (opcional) lista de modelos separados por vírgula, tentados em ordem.
+  GRADIO_SHARE (opcional) "1" cria um link público temporário (usado na demo do Colab).
 """
 import os
 import time
@@ -13,6 +14,7 @@ import faiss
 import gradio as gr
 import numpy as np
 import pandas as pd
+import torch
 from datasets import load_dataset
 from huggingface_hub import InferenceClient
 from rank_bm25 import BM25Okapi
@@ -28,15 +30,16 @@ RERANK_MODEL = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-v2-m3")
 LLM_MODELS = [m.strip() for m in os.getenv(
     "LLM_MODELS", "Qwen/Qwen3-4B-Instruct-2507,openai/gpt-oss-20b,meta-llama/Llama-3.1-8B-Instruct").split(",") if m.strip()]
 K_CANDIDATES, K_RERANK = 50, 30
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 MODE_NAIVE = "RAG naive (só denso)"
 MODE_HYBRID = "Híbrido (BM25 + denso, RRF)"
 MODE_RERANK = "Híbrido + Reranking (cross-encoder)"
 
 # ------------------------------------------------------------------ carga
-print("Carregando modelos de embedding e reranking…")
-embedder = SentenceTransformer(EMBED_MODEL, device="cpu")
-reranker = CrossEncoder(RERANK_MODEL, device="cpu", max_length=512)
+print(f"Carregando modelos de embedding e reranking ({DEVICE})…")
+embedder = SentenceTransformer(EMBED_MODEL, device=DEVICE)
+reranker = CrossEncoder(RERANK_MODEL, device=DEVICE, max_length=512)
 
 if INDEX_REPO:
     print(f"Baixando índice pré-calculado de {INDEX_REPO}…")
@@ -233,4 +236,4 @@ with gr.Blocks(title="RAG Avançado — Hugging Face") as demo:
         )
 
 if __name__ == "__main__":
-    demo.queue().launch()
+    demo.queue().launch(share=os.getenv("GRADIO_SHARE", "").lower() in ("1", "true"))

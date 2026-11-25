@@ -2,8 +2,7 @@
 
 **Busca híbrida, reranking e HyDE: medindo quanto cada técnica melhora a recuperação em português.**
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1LkVumJ6Iie85-qsgdWIetZetARjoUJKx/view?usp=sharing)
-[![Demo no Colab](https://img.shields.io/badge/Demo-Gradio%20no%20Colab-orange?logo=googlecolab)](https://colab.research.google.com/github/MarieleV/rag-avancado-hf/blob/main/notebooks/Demo_Gradio_Colab.ipynb)
+[![Notebooks no Google Drive](https://img.shields.io/badge/Notebooks-Colab%20no%20Google%20Drive-orange?logo=googlecolab)](https://drive.google.com/drive/folders/1r90vmVaAYC0WGnt0sJ-DdDv19ggnzzX7?usp=drive_link)
 [![Índice no Hub](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-rag--nanonq--pt--index-blue)](https://huggingface.co/datasets/mariele-vieira/rag-nanonq-pt-index)
 
 Projeto de avaliação final da disciplina **Machine Learning — Deep Learning**
@@ -71,8 +70,15 @@ Pergunta ─► [HyDE] ─► busca densa (top-50) ─┐
 
 ## Como executar
 
-**Notebook:** clique no badge "Open in Colab", escolha *Ambiente de execução → T4 GPU* e execute todas as células
-(≈ 20–30 min). Ao final, ele salva `resultados_rag.png` e `resultados_rag.json` — copie-os para `results/`.
+Os dois notebooks, **já executados e com as saídas**, estão na
+[pasta do Google Drive](https://drive.google.com/drive/folders/1r90vmVaAYC0WGnt0sJ-DdDv19ggnzzX7?usp=drive_link)
+(badge "Notebooks no Google Drive"): `RAG_Avancado_NanoNQ.ipynb` (experimento) e `Demo_Gradio_Colab.ipynb` (demo).
+Para abrir um deles no Colab, clique duas vezes no arquivo e escolha *Abrir com → Google Colaboratory*. As cópias sem
+saídas estão em [`notebooks/`](notebooks/).
+
+**Notebook do experimento:** abra `RAG_Avancado_NanoNQ.ipynb`, escolha *Ambiente de execução → T4 GPU* e execute
+todas as células (≈ 20–30 min). Ao final, ele salva `resultados_rag.png` e `resultados_rag.json` — copie-os para
+`results/`.
 
 **Testes:**
 
@@ -90,7 +96,8 @@ ligar o HyDE e comparar lado a lado as fontes recuperadas.
 Docker; na conta gratuita só há Spaces estáticos, que não rodam os modelos em PyTorch. Por isso a demo roda no
 Colab, com GPU T4 gratuita e um link público temporário do Gradio.
 
-1. Abra o badge **"Demo no Colab"** e escolha *Ambiente de execução → T4 GPU*.
+1. Abra `Demo_Gradio_Colab.ipynb` na [pasta do Google Drive](https://drive.google.com/drive/folders/1r90vmVaAYC0WGnt0sJ-DdDv19ggnzzX7?usp=drive_link)
+   e escolha *Ambiente de execução → T4 GPU*.
 2. *Executar tudo* → abra o link `https://….gradio.live` que aparece na última célula.
 
 A demo não recalcula nada: ela baixa o índice já publicado no Hub

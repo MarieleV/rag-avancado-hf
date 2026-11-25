@@ -64,7 +64,7 @@ Pergunta ─► [HyDE] ─► busca densa (top-50) ─┐
 ├── space/                                # app Gradio para o Hugging Face Spaces
 ├── tests/test_rag_core.py                # testes das funções puras
 ├── results/                              # gráficos e JSON gerados pelo notebook
-└── docs/                                 # relatório e slides (PDF)
+└── docs/relatorio.md                      # relatório do projeto
 ```
 
 ## Como executar

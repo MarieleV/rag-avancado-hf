@@ -1,8 +1,7 @@
 # Guia de estudo: RAG Avançado com Hugging Face
 
-Material de preparação para a apresentação. Cada seção explica **o que** o projeto faz, **como** o código faz e
-**por que** foi feito assim, terminando com o que costuma ser perguntado. No fim há um roteiro de apresentação, uma
-lista de perguntas prováveis com respostas e uma "cola" com os números principais.
+Cada seção explica **o que** o projeto faz, **como** o código faz e
+**por que** foi feito assim, terminando com o que costuma ser perguntado.
 
 **Arquivos de referência:**
 [`notebooks/RAG_Avancado_NanoNQ.ipynb`](../notebooks/RAG_Avancado_NanoNQ.ipynb) (experimento) ·

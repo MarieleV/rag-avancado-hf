@@ -6,8 +6,11 @@
 [![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-demo-blue)](https://huggingface.co/spaces/SEU-USUARIO/rag-avancado-pt)
 
 Projeto de avaliação final da disciplina **Machine Learning — Deep Learning**
+
 (Prof. Claudinei Dias · Católica de Santa Catarina), **Módulo 2: Arquiteturas de Recuperação de Informação
 (RAG Avançado e GraphRAG)**.
+
+**Alunos:** Mariele Vieira, Maria A. Giuliari e Alexandre Sebastian 
 
 ## O que o projeto faz
 
@@ -48,7 +51,8 @@ Pergunta ─► [HyDE] ─► busca densa (top-50) ─┐
 > **Sobre a latência:** a coluna mede só a **recuperação** (busca densa, BM25, RRF e reranking).
 > Na linha 5, o tempo de **geração do documento hipotético pelo LLM (HyDE) não está incluído** — ele é uma
 > chamada extra ao LLM por pergunta e costuma custar mais do que todas as outras etapas juntas
-> (o tempo total aparece na saída `%%time` da seção 9 do notebook).
+> (o tempo total aparece na saída `%%time` da seção 9 do notebook). No experimento, gerar os 50 documentos hipotéticos > levou 7 min 48 s (≈ 9,4 s por pergunta, contra ≈ 0,27 s de toda a recuperação).
+
 
 ![Resultados](results/resultados_rag.png)
 

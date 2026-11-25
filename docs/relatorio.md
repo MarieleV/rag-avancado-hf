@@ -1,8 +1,13 @@
 # RAG Avançado com Hugging Face: da evolução dos GPTs (2022–2026) a um pipeline com busca híbrida, reranking e HyDE
 
-**Disciplina:** Machine Learning — Deep Learning · **Prof.** Claudinei Dias (Ney) · Católica de Santa Catarina
+**Disciplina:** Machine Learning — Deep Learning · 
+
+**Prof.** Claudinei Dias (Ney) · Católica de Santa Catarina
+
 **Laboratório de Pesquisa — Módulo 2:** Arquiteturas de Recuperação de Informação (RAG Avançado e GraphRAG)
-**Autoria:** Mariele Vieira
+
+**Alunos:** Mariele Vieira, Maria A. Giuliari e Alexandre Sebastian 
+
 **Código:** repositório `rag-avancado-hf` (notebook, app Gradio no Hugging Face Spaces e testes)
 
 ---
@@ -260,12 +265,23 @@ aparece na saída `%%time` da seção 9 do notebook.
 | 5. HyDE + Híbrido + Rerank | 0.72 | 0.625 | 0.649 | 260.4 |
 
 ¹ Somente recuperação. Na linha 5, **sem** o tempo de geração do HyDE pelo LLM (ver seção 5).
+A busca densa roda em lote para as 50 perguntas, então a latência por consulta das linhas 1, 3, 4 e 5 está um pouco subestimada em relação a um uso consulta a consulta.
 
 ![Resultados](../results/resultados_rag.png)
 
-**Exemplos qualitativos** (seção 11 do notebook): copie 1–2 perguntas "resgatadas" — em que a passagem correta
-estava fora do top-5 no RAG naive e entrou no top-5 com reranking — e a resposta do teste de robustez (pergunta
-fora da base, em que o modelo deve recusar).
+**Leitura da tabela:** O Recall@k completo (k = 1, 3, 5, 10) está em ´results/resultados_rag.json´. Para o Recall@1, os valores foram 0,39 (denso), 0,18 (BM25), 0,30 (híbrido), 0,49 (híbrido + rerank) e 0,48 (HyDE); para o Recall@10, 0,73, 0,55, 0,69, 0,78 e 0,78.
+
+**Exemplos qualitativos** (seção 11 do notebook): Em 15 das 50 perguntas o RAG naive não trouxe a passagem correta no top-5; o pipeline com reranking resgatou 5 delas (a posição é calculada no nível de documento):
+
+| Pergunta | Posição no naive | Posição com rerank | 
+|---|---|---|
+| Por que existe o Anjo do Norte? | 9 | 4 | 
+| Quais foram os resultados do desenvolvimento ferroviário na Flórida? | 15 | 3 | 
+| Estou disposto a dar a vida para defender o seu direito de dizê-lo. | 8 | 1 | 
+
+Na comparação lado a lado com apenas 3 trechos no contexto, a passagem correta entrou no contexto do pipeline avançado nas perguntas da Flórida e da frase atribuída a Voltaire, e não entrou no naive. Na última, o naive respondeu "Não encontrei essa informação nos documentos", enquanto o avançado explicou, citando a fonte [1], que a frase é uma versão adaptada de uma frase de Hall, frequentemente atribuída a Voltaire. Na pergunta do Anjo do Norte a passagem correta ficou na posição 4, fora do contexto de 3 trechos nos dois pipelines; o naive recusou, mas o avançado respondeu com base em trechos sobre outro assunto, o que mostra que a recusa não é garantida.
+
+**Teste de robustez:** para "Qual foi o placar da final da Copa do Mundo de 2026?" (fora da base), o contexto trouxe passagens sobre outras Copas e o modelo respondeu corretamente "Não encontrei essa informação nos documentos."
 
 **GraphRAG** (seção 12): número de entidades, relações e comunidades obtidas e a resposta à pergunta global.
 ![GraphRAG](../results/graphrag_demo.png)
@@ -293,9 +309,7 @@ fora da base, em que o modelo deve recusar).
   preço que se justifica pelo ganho. O HyDE acrescenta uma chamada inteira ao LLM (não contabilizada na tabela)
   sem ganho mensurável, então não se paga nesta configuração.
 
-**Limitações.** 50 perguntas é uma amostra pequena (diferenças menores que ~0,03 podem ser ruído); o corpus é uma
-tradução automática; a avaliação cobre a recuperação, não a qualidade da resposta gerada; o GraphRAG é uma
-demonstração com ~12 trechos, não uma avaliação.
+**Limitações:** 50 perguntas é uma amostra pequena (diferenças menores que ~0,03 podem ser ruído; 0,02 de Recall@5 equivale a uma pergunta); o corpus é uma tradução automática; a avaliação quantitativa cobre a recuperação, não a qualidade da resposta gerada (os exemplos qualitativos mostram que o LLM pode responder mesmo quando o contexto não tem a resposta); a busca densa foi medida em lote; o GraphRAG é uma demonstração com 12 trechos, não uma avaliação; e não rodamos a ablação "denso + rerank" nem variações de peso no RRF.
 
 ---
 

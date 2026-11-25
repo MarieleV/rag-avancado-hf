@@ -3,7 +3,8 @@
 **Busca híbrida, reranking e HyDE: medindo quanto cada técnica melhora a recuperação em português.**
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1LkVumJ6Iie85-qsgdWIetZetARjoUJKx/view?usp=sharing)
-[![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-demo-blue)](https://huggingface.co/spaces/mariele-vieira/rag-avancado-pt)
+[![Demo no Colab](https://img.shields.io/badge/Demo-Gradio%20no%20Colab-orange?logo=googlecolab)](https://colab.research.google.com/github/MarieleV/rag-avancado-hf/blob/main/notebooks/Demo_Gradio_Colab.ipynb)
+[![Índice no Hub](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-rag--nanonq--pt--index-blue)](https://huggingface.co/datasets/mariele-vieira/rag-nanonq-pt-index)
 
 Projeto de avaliação final da disciplina **Machine Learning — Deep Learning**
 
@@ -51,7 +52,7 @@ Pergunta ─► [HyDE] ─► busca densa (top-50) ─┐
 > **Sobre a latência:** a coluna mede só a **recuperação** (busca densa, BM25, RRF e reranking).
 > Na linha 5, o tempo de **geração do documento hipotético pelo LLM (HyDE) não está incluído** — ele é uma
 > chamada extra ao LLM por pergunta e costuma custar mais do que todas as outras etapas juntas
-> (o tempo total aparece na saída `%%time` da seção 9 do notebook). No experimento, gerar os 50 documentos hipotéticos > levou 7 min 48 s (≈ 9,4 s por pergunta, contra ≈ 0,27 s de toda a recuperação).
+> (o tempo total aparece na saída `%%time` da seção 9 do notebook). No experimento, gerar os 50 documentos hipotéticos levou 7 min 48 s (≈ 9,4 s por pergunta, contra ≈ 0,27 s de toda a recuperação).
 
 
 ![Resultados](results/resultados_rag.png)
@@ -60,8 +61,9 @@ Pergunta ─► [HyDE] ─► busca densa (top-50) ─┐
 
 ```
 ├── notebooks/RAG_Avancado_NanoNQ.ipynb   # experimento completo (Colab, GPU T4)
+├── notebooks/Demo_Gradio_Colab.ipynb     # sobe a interface Gradio com link público
 ├── src/rag_core.py                       # chunking, BM25, RRF, métricas, prompts
-├── space/                                # app Gradio para o Hugging Face Spaces
+├── space/                                # app Gradio (roda no Colab ou num Space)
 ├── tests/test_rag_core.py                # testes das funções puras
 ├── results/                              # gráficos e JSON gerados pelo notebook
 └── docs/relatorio.md                      # relatório do projeto
@@ -79,14 +81,29 @@ pip install pytest
 pytest tests/
 ```
 
-**Space:** crie um Space (SDK Gradio), envie o conteúdo de `space/` e configure em *Settings*:
+## Demo interativa no Colab
 
-| Nome | Tipo | Valor |
-|---|---|---|
-| `HF_TOKEN` | Secret | token com permissão *Inference Providers* |
-| `INDEX_REPO` | Variable | dataset publicado pelo notebook (seção 13) |
+A interface Gradio (pasta `space/`) permite fazer perguntas, alternar entre RAG naive, híbrido e híbrido + reranking,
+ligar o HyDE e comparar lado a lado as fontes recuperadas.
 
-> `space/rag_core.py` é uma cópia de `src/rag_core.py` (o Space precisa do arquivo na mesma pasta).
+**Por que no Colab e não num Space?** O Hugging Face passou a exigir o plano PRO para Spaces com SDK Gradio ou
+Docker; na conta gratuita só há Spaces estáticos, que não rodam os modelos em PyTorch. Por isso a demo roda no
+Colab, com GPU T4 gratuita e um link público temporário do Gradio.
+
+1. Abra o badge **"Demo no Colab"** e escolha *Ambiente de execução → T4 GPU*.
+2. Em 🔑 *Secrets*, crie `HF_TOKEN` (token com permissão *Make calls to Inference Providers*) e ative o acesso
+   ao notebook.
+3. *Executar tudo* → abra o link `https://….gradio.live` que aparece na última célula.
+
+A demo não recalcula nada: ela baixa o índice já publicado no Hub
+([`mariele-vieira/rag-nanonq-pt-index`](https://huggingface.co/datasets/mariele-vieira/rag-nanonq-pt-index),
+seção 13 do notebook) e usa um LLM aberto via *Inference Providers*. O link funciona enquanto a sessão do Colab
+estiver ativa.
+
+> **Num Space (conta PRO):** crie um Space com SDK Gradio, envie os arquivos de `space/` e defina em *Settings* o
+> secret `HF_TOKEN` e a variável `INDEX_REPO = mariele-vieira/rag-nanonq-pt-index`.
+>
+> `space/rag_core.py` é uma cópia de `src/rag_core.py` (o app precisa do arquivo na mesma pasta).
 > Ao alterar um, copie para o outro.
 
 ## Referências

@@ -276,7 +276,7 @@ A busca densa roda em lote para as 50 perguntas, então a latência por consulta
 **Exemplos qualitativos** (seção 11 do notebook): Em 15 das 50 perguntas o RAG naive não trouxe a passagem correta no top-5; o pipeline com reranking resgatou 5 delas (a posição é calculada no nível de documento):
 
 | Pergunta | Posição no naive | Posição com rerank | 
-|---|---|---|---|---|
+|---|---|---|
 | Por que existe o Anjo do Norte? | 9 | 4 | 
 | Quais foram os resultados do desenvolvimento ferroviário na Flórida? | 15 | 3 | 
 | Estou disposto a dar a vida para defender o seu direito de dizê-lo. | 8 | 1 | 

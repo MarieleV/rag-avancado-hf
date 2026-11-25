@@ -24,5 +24,5 @@ Projeto do Módulo 2 (RAG Avançado) — Machine Learning / Deep Learning, Cató
 | Nome | Tipo | Valor |
 |---|---|---|
 | `HF_TOKEN` | Secret | token com permissão *Inference Providers* |
-| `INDEX_REPO` | Variable | `seu-usuario/rag-nanonq-pt-index` (gerado pelo notebook) |
+| `INDEX_REPO` | Variable | `mariele-vieira/rag-nanonq-pt-index` (gerado pelo notebook) |
 | `LLM_MODELS` | Variable (opcional) | modelos separados por vírgula, tentados em ordem |

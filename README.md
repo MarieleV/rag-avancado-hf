@@ -3,7 +3,7 @@
 **Busca híbrida, reranking e HyDE: medindo quanto cada técnica melhora a recuperação em português.**
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1LkVumJ6Iie85-qsgdWIetZetARjoUJKx/view?usp=sharing)
-[![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-demo-blue)](https://huggingface.co/spaces/SEU-USUARIO/rag-avancado-pt)
+[![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-demo-blue)](https://huggingface.co/spaces/mariele-vieira/rag-avancado-pt)
 
 Projeto de avaliação final da disciplina **Machine Learning — Deep Learning**
 

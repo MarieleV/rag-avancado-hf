@@ -2,7 +2,7 @@
 marp: true
 theme: default
 paginate: true
-size: 16:9
+size: 16 : 9
 style: |
   section { font-size: 26px; }
   h1 { color: #9b1b30; }
@@ -18,9 +18,10 @@ style: |
 ## Busca híbrida, reranking e HyDE em português
 
 Machine Learning — Deep Learning · Prof. Claudinei Dias (Ney)
+
 Católica de Santa Catarina · **Módulo 2: RAG Avançado e GraphRAG**
 
-Mariele Vieira
+**Alunos:** Mariele Vieira, Maria A. Giuliari e Alexandre Sebastian 
 
 ---
 
@@ -120,15 +121,14 @@ Pergunta ─► [HyDE] ─► FAISS top-50 ─┐
 
 ## Resultados
 
-<!-- ✏️ Preencher com a tabela da seção 10 do notebook -->
 
 | Configuração | Recall@5 | MRR@10 | nDCG@10 | ms/consulta* |
 |---|---|---|---|---|
-| 1. Denso (naive) | | | | |
-| 2. BM25 | | | | |
-| 3. Híbrido (RRF) | | | | |
-| 4. Híbrido + Rerank | | | | |
-| 5. HyDE + Híbrido + Rerank | | | | |
+| 1. Denso (naive) | 0.640 | 0.548 | 0.574 | 2.9 |
+| 2. BM25 | 0.430 | 0.298 | 0.356 | 6.8 |
+| 3. Híbrido (RRF) | 0.610 | 0.444 | 0.502 | 9.7 |
+| 4. Híbrido + Rerank | 0.700 | 0.634 | 0.652 | 271.4 |
+| 5. HyDE + Híbrido + Rerank | 0.720 | 0.625 | 0.649 | 269.2 |
 
 <p class="small">* somente recuperação; linha 5 sem o tempo de geração do HyDE.</p>
 
@@ -138,16 +138,15 @@ Pergunta ─► [HyDE] ─► FAISS top-50 ─┐
 
 ## Exemplo: pergunta "resgatada"
 
-<!-- ✏️ Copiar da seção 10/11 do notebook -->
 
-❓ *pergunta*
+❓ *Estou disposto a dar a vida para defender o seu direito de dizê-lo.*
 
-- RAG naive: passagem correta na posição **…**
-- Híbrido + Rerank: passagem correta na posição **…**
+- RAG naive: passagem correta na posição **8**
+- Híbrido + Rerank: passagem correta na posição **1**
 
-💬 Resposta com citações: *…* [1]
+💬 Naive (3 trechos): "Não encontrei essa informação nos documentos." 💬 Avançado (3 trechos): frase adaptada de Hall, muitas vezes atribuída a Voltaire [1]
 
-**Robustez:** pergunta fora da base → *"Não encontrei essa informação nos documentos."*
+**Robustez:** "placar da final da Copa de 2026" (fora da base) → *"Não encontrei essa informação nos documentos."*
 
 ---
 
@@ -158,6 +157,7 @@ Pergunta ─► [HyDE] ─► FAISS top-50 ─┐
 - O LLM extrai triplas `(entidade, relação, entidade)` de ~12 trechos
 - Louvain agrupa as entidades em comunidades; o LLM resume cada uma
 - Pergunta **global** respondida a partir dos resumos (*map-reduce*)
+- Resultado: **71 entidades**, **54 relações**; só 1 das 4 maiores comunidades tratava do Brasil
 
 <p class="small">Demonstração didática; não faz parte da avaliação quantitativa.</p>
 
@@ -176,12 +176,11 @@ Pergunta ─► [HyDE] ─► FAISS top-50 ─┐
 
 ## Conclusões
 
-<!-- ✏️ Ajustar aos números -->
 
 - Contexto longo **não** eliminou o RAG: selecionar **pouco e bem** continua decisivo
-- Busca híbrida: …
-- Reranking: …
-- HyDE: depende do conhecimento do LLM — com 4B pode ajudar ou atrapalhar
+- **Busca híbrida:** não superou o denso aqui (nDCG@10 0,50 vs 0,57); o BM25 sozinho é fraco neste corpus traduzido
+- **Reranking:** maior ganho — MRR@10 0,44 → 0,63 e nDCG@10 0,50 → 0,65, por ≈ 260 ms/consulta
+- **HyDE:** sem ganho mensurável (diferenças ≤ 0,02) e ≈ 9 s extras por pergunta com o LLM de 4B
 - **Limitações:** 50 perguntas; corpus traduzido; avaliação só da recuperação
 
 **Próximos passos:** RAGAS para avaliar a resposta · *contextual retrieval* · RAG agêntico com a busca exposta via MCP
@@ -194,4 +193,4 @@ Pergunta ─► [HyDE] ─► FAISS top-50 ─┐
 
 Código, notebook e relatório: `github.com/MarieleV/rag-avancado-hf`
 
-<p class="small">Referências completas em <code>docs/relatorio.md</code></p>
+**Alunos:** Mariele Vieira, Maria A. Giuliari e Alexandre Sebastian 

@@ -1,8 +1,13 @@
 # RAG Avançado com Hugging Face: da evolução dos GPTs (2022–2026) a um pipeline com busca híbrida, reranking e HyDE
 
-**Disciplina:** Machine Learning — Deep Learning · **Prof.** Claudinei Dias (Ney) · Católica de Santa Catarina
+**Disciplina:** Machine Learning — Deep Learning · 
+
+**Prof.** Claudinei Dias (Ney) · Católica de Santa Catarina
+
 **Laboratório de Pesquisa — Módulo 2:** Arquiteturas de Recuperação de Informação (RAG Avançado e GraphRAG)
-**Autoria:** Mariele Vieira
+
+**Alunos:** Mariele Vieira, Maria A. Giuliari e Alexandre Sebastian 
+
 **Código:** repositório `rag-avancado-hf` (notebook, app Gradio no Hugging Face Spaces e testes)
 
 ---
@@ -251,45 +256,49 @@ aparece na saída `%%time` da seção 9 do notebook.
 
 ## 6. Resultados
 
-> ✏️ **Preencher após executar o notebook** — a seção 10 imprime esta tabela pronta (`results.to_markdown()`)
-> e salva o gráfico `results/resultados_rag.png`.
+**Corpus e índice.** 5.035 documentos foram divididos em 6.643 chunks (1,32 por documento); o índice FAISS tem 1.024 dimensões e 27,2 MB em disco. As 50 perguntas têm 57 pares relevantes (algumas têm mais de uma passagem correta). 
 
 | Configuração | Recall@5 | MRR@10 | nDCG@10 | ms/consulta¹ |
 |---|---|---|---|---|
-| 1. Denso (naive) | | | | |
-| 2. BM25 | | | | |
-| 3. Híbrido (RRF) | | | | |
-| 4. Híbrido + Rerank | | | | |
-| 5. HyDE + Híbrido + Rerank | | | | |
+| 1. Denso (naive) | 0.640 | 0.548 | 0.574 | 2.9 |
+| 2. BM25 | 0.430 | 0.298 | 0.356 | 6.8 |
+| 3. Híbrido (RRF) | 0.610 | 0.444 | 0.502 | 9.7 |
+| 4. Híbrido + Rerank | 0.700 | 0.634 | 0.652 | 271.4 |
+| 5. HyDE + Híbrido + Rerank | 0.720 | 0.625 | 0.649 | 269.2 |
 
 ¹ Somente recuperação. Na linha 5, **sem** o tempo de geração do HyDE pelo LLM (ver seção 5).
+A busca densa roda em lote para as 50 perguntas, então a latência por consulta das linhas 1, 3, 4 e 5 está um pouco subestimada em relação a um uso consulta a consulta.
 
 <!-- ![Resultados](../results/resultados_rag.png) -->
 
-**Exemplos qualitativos** (seção 11 do notebook): copie 1–2 perguntas "resgatadas" — em que a passagem correta
-estava fora do top-5 no RAG naive e entrou no top-5 com reranking — e a resposta do teste de robustez (pergunta
-fora da base, em que o modelo deve recusar).
+**Leitura da tabela:** O Recall@k completo (k = 1, 3, 5, 10) está em ´results/resultados_rag.json´. Para o Recall@1, os valores foram 0,39 (denso), 0,18 (BM25), 0,30 (híbrido), 0,49 (híbrido + rerank) e 0,48 (HyDE); para o Recall@10, 0,73, 0,55, 0,69, 0,78 e 0,78.
 
-**GraphRAG** (seção 12): número de entidades, relações e comunidades obtidas e a resposta à pergunta global.
+**Exemplos qualitativos** (seção 11 do notebook): Em 15 das 50 perguntas o RAG naive não trouxe a passagem correta no top-5; o pipeline com reranking resgatou 5 delas (a posição é calculada no nível de documento):
+
+| Pergunta | Posição no naive | Posição com rerank | 
+|---|---|---|---|---|
+| Por que existe o Anjo do Norte? | 9 | 4 | 
+| Quais foram os resultados do desenvolvimento ferroviário na Flórida? | 15 | 3 | 
+| Estou disposto a dar a vida para defender o seu direito de dizê-lo. | 8 | 1 | 
+
+Na comparação lado a lado com apenas 3 trechos no contexto, a passagem correta entrou no contexto do pipeline avançado nas perguntas da Flórida e da frase atribuída a Voltaire, e não entrou no naive. Na última, o naive respondeu "Não encontrei essa informação nos documentos", enquanto o avançado explicou, citando a fonte [1], que a frase é uma versão adaptada de uma frase de Hall, frequentemente atribuída a Voltaire. Na pergunta do Anjo do Norte a passagem correta ficou na posição 4, fora do contexto de 3 trechos nos dois pipelines; o naive recusou, mas o avançado respondeu com base em trechos sobre outro assunto, o que mostra que a recusa não é garantida.
+
+**Teste de robustez:** para "Qual foi o placar da final da Copa do Mundo de 2026?" (fora da base), o contexto trouxe passagens sobre outras Copas e o modelo respondeu corretamente "Não encontrei essa informação nos documentos."
+
+**GraphRAG (demonstração)** (seção 12): A partir de 12 trechos recuperados para "história e geografia do Brasil", o LLM extraiu um grafo com **71 entidades e 54 relações**. As quatro maiores comunidades (Louvain) tinham 10, 8, 7 e 6 entidades. Apenas a primeira tratava do Brasil (identidade nacional e futebol); as demais giraram em torno de América Central e Mesoamérica, de um grupo sem tema claro e de globalização. A resposta à pergunta global ("quais os principais temas dos documentos sobre o Brasil?") acabou usando só a primeira comunidade. O resultado ilustra o mecanismo, mas com limites claros: o corpus é um conjunto de passagens da Wikipédia sem tema comum, e o grafo é esparso (54 relações para 71 entidades), o que gera comunidades pequenas e pouco coerentes.
 <!-- ![GraphRAG](../results/graphrag_demo.png) -->
 
 ---
 
 ## 7. Discussão
 
-> ✏️ Ajustar o texto aos números obtidos. Os pontos abaixo indicam o que analisar.
 
-- **Híbrido × denso:** a fusão melhorou o Recall@5? Em quais perguntas o BM25 ajudou (nomes, datas, números)?
-- **Ganho do reranking:** compare MRR@10 e nDCG@10 entre as linhas 3 e 4 — o reranking atua sobretudo na
-  **ordem** (passagem certa mais perto do topo), que é o que importa para um contexto de 5 trechos.
-- **HyDE:** depende do conhecimento prévio do LLM. Com um modelo de 4B, o documento hipotético pode trazer fatos
-  errados que afastam a busca da resposta; o resultado pode ser neutro ou até negativo — e isso é um achado válido.
-- **Custo × benefício:** o reranking acrescenta dezenas a centenas de milissegundos por consulta; o HyDE acrescenta
-  uma chamada inteira ao LLM (não contabilizada na tabela).
+- **Híbrido × denso:** A fusão **não melhorou** a recuperação: Recall@5 foi de 0,64 para 0,61, MRR@10 de 0,548 para 0,444 e nDCG@10 de 0,574 para 0,502. O BM25 sozinho ficou bem abaixo do denso (Recall@5 = 0,43; nDCG@10 = 0,356) e, como o RRF dá o mesmo peso às duas listas, ele rebaixou acertos do denso (Recall@1 caiu de 0,39 para 0,30). Uma explicação plausível, que não testamos, é que as perguntas do Natural Questions são paráfrases em linguagem natural e o corpus é uma tradução automática: o vocabulário da pergunta e o da passagem divergem (por exemplo, "O Estranho Mundo de Jack" na pergunta contra "O Pesadelo Antes do Natal" na passagem correta), o que enfraquece a busca por termos exatos. Não analisamos pergunta a pergunta onde o BM25 ajudou, e não testamos pesos diferentes no RRF.
+- **Ganho do reranking:** É o maior ganho do trabalho. Do híbrido para o híbrido + rerank: Recall@5 de 0,61 para 0,70, MRR@10 de 0,444 para 0,634, nDCG@10 de 0,502 para 0,652 e Recall@1 de 0,30 para 0,49. Em relação ao naive: +0,06 no Recall@5, +0,086 no MRR@10 e +0,078 no nDCG@10. O reranking atua sobretudo na **ordem** (passagem certa mais perto do topo), o que importa para um contexto de 5 trechos. Ele só reordena os 30 candidatos do híbrido, então tem um teto: o Recall@10 parou em 0,78. Como não testamos "denso + rerank" (sem BM25), não dá para separar quanto do ganho vem do reranker e quanto do conjunto de candidatos.
+- **HyDE:** Sem ganho mensurável: Recall@5 foi de 0,70 para 0,72 (≈ uma pergunta a mais em 50), enquanto Recall@1 (0,49 → 0,48), MRR@10 (0,634 → 0,625) e nDCG@10 (0,652 → 0,649) ficaram praticamente iguais e o Recall@10 não mudou. Todas as diferenças são ≤ 0,02, abaixo da margem de ruído (~0,03). Isso é coerente com a hipótese de que o HyDE depende do conhecimento do LLM: no primeiro exemplo, o modelo de 4B afirmou que "O Estranho Mundo de Jack" não é um filme da Disney e inventou uma explicação, o tipo de fato errado que pode afastar a busca da resposta. Resultado neutro é um achado válido.
+- **Custo × benefício:** O reranking acrescentou ≈ 262 ms por consulta (271,4 − 9,7 ms) na T4, para 30 pares. O HyDE exige uma chamada ao LLM por pergunta: gerar os 50 documentos hipotéticos levou 7 min 48 s (≈ 9,4 s por pergunta, mais de 30 vezes o tempo de toda a recuperação), sem benefício claro. Neste experimento, a melhor relação custo-benefício foi a configuração 4 (híbrido + rerank).
 
-**Limitações.** 50 perguntas é uma amostra pequena (diferenças menores que ~0,03 podem ser ruído); o corpus é uma
-tradução automática; a avaliação cobre a recuperação, não a qualidade da resposta gerada; o GraphRAG é uma
-demonstração com ~12 trechos, não uma avaliação.
+**Limitações:** 50 perguntas é uma amostra pequena (diferenças menores que ~0,03 podem ser ruído; 0,02 de Recall@5 equivale a uma pergunta); o corpus é uma tradução automática; a avaliação quantitativa cobre a recuperação, não a qualidade da resposta gerada (os exemplos qualitativos mostram que o LLM pode responder mesmo quando o contexto não tem a resposta); a busca densa foi medida em lote; o GraphRAG é uma demonstração com 12 trechos, não uma avaliação; e não rodamos a ablação "denso + rerank" nem variações de peso no RRF.
 
 ---
 
